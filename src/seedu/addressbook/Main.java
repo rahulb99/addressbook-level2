@@ -52,9 +52,7 @@ public class Main {
      */
     private void start(String[] launchArgs) {
         try {
-            this.ui = new TextUi();
-            this.storage = initializeStorage(launchArgs);
-            this.addressBook = storage.load();
+            initializeStart(launchArgs);
             ui.showWelcomeMessage(VERSION, storage.getPath());
 
         } catch (InvalidStorageFilePathException | StorageOperationException e) {
@@ -72,6 +70,13 @@ public class Main {
         }
     }
 
+    /** Initializes the UI, storage file and address book to prepare for start */
+    private void initializeStart(String[] launchArgs) throws InvalidStorageFilePathException, StorageOperationException {
+        this.ui = new TextUi();
+        this.storage = initializeStorage(launchArgs);
+        this.addressBook = storage.load();
+    }
+
     /** Prints the Goodbye message and exits. */
     private void exit() {
         ui.showGoodbyeMessage();
@@ -82,13 +87,20 @@ public class Main {
     private void runCommandLoopUntilExitCommand() {
         Command command;
         do {
-            String userCommandText = ui.getUserCommand();
-            command = new Parser().parseCommand(userCommandText);
-            CommandResult result = executeCommand(command);
-            recordResult(result);
-            ui.showResultToUser(result);
+            command = getCommand();
 
         } while (!ExitCommand.isExit(command));
+    }
+
+    /** Reads the user command and returns it. */
+    private Command getCommand() {
+        Command command;
+        String userCommandText = ui.getUserCommand();
+        command = new Parser().parseCommand(userCommandText);
+        CommandResult result = executeCommand(command);
+        recordResult(result);
+        ui.showResultToUser(result);
+        return command;
     }
 
     /** Updates the {@link #lastShownList} if the result contains a list of Persons. */
